@@ -13,9 +13,11 @@ const winningCombinations = [
 
 let playerTurn = document.querySelector('.game__turn');
 let gameField = document.querySelector('.game__field');
+let restartButton = document.querySelector('.game__button');
 let player = 'X';
 let playerX = [];
 let playerO = [];
+let turnsCount = 0;
 
 
 function actionGame(evt) {
@@ -24,18 +26,52 @@ function actionGame(evt) {
     }
 }
 
+function restartGame() {
+    let cells = document.querySelectorAll('.game__cell');
+    for (let i = 0; i < cells.length; i++) {
+        cells[i].innerHTML = '';
+    }
+    player = 'X';
+    playerTurn.innerHTML = player + '\'s\ turn';
+    playerX = [];
+    playerO = [];
+    turnsCount = 0;
+    gameField.addEventListener('click', actionGame);
+}
+
 gameField.addEventListener('click', actionGame);
+restartButton.addEventListener('click', restartGame);
+
+
+// checking, if player won or if it's draw
+
+function actionWithPlayers(checkingPlayer, cellNumberCheck, symbol) {
+    if (!checkIfWin(checkingPlayer, cellNumberCheck)) {
+        if (turnsCount === 9) {
+            playerTurn.innerHTML = 'Draw!';
+            gameField.removeEventListener('click', actionGame);
+        } else {
+            player = symbol;
+            playerTurn.innerHTML = player + '\'s\ turn';
+        }
+
+    }
+}
+
+
+// main action function
 
 function addSymbol(evt) {
     let target = evt.target;
     let cellNumber = +target.getAttribute('cell-number');
+
     if (target.innerHTML === '') {
         target.innerHTML = player;
-
         (player === 'X') ? (playerX.push(cellNumber)) : (playerO.push(cellNumber));
-
     }
-    playerTurn.innerHTML = player + '\'s\ turn';
+
+    turnsCount++;
+
 
     if (playerX.length < 3) {
         if (player === 'X') {
@@ -43,19 +79,21 @@ function addSymbol(evt) {
         } else {
             player = 'X';
         }
+        playerTurn.innerHTML = player + '\'s\ turn';
 
     } else {
         if (player === 'X') {
-            checkIfWin(playerX, cellNumber);
-            player = 'O';
+            actionWithPlayers(playerX, cellNumber, 'O');
+
         } else {
-            checkIfWin(playerO, cellNumber);
-            player = 'X';
+            actionWithPlayers(playerO, cellNumber, 'X');
         }
+
     }
 
 }
 
+// it's checking the possibility of winning
 
 function checkIfWin(arr, number) {
     for (let i = 0; i < winningCombinations.length; i++) {
@@ -69,12 +107,14 @@ function checkIfWin(arr, number) {
                     if (count == 3) {
                         gameField.removeEventListener('click', actionGame);
                         playerTurn.innerHTML = player + ' won!';
+                        return true;
                     }
                 }
             }
         }
     }
 }
+
 
 
 
